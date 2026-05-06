@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이소리 Portfolio</title>
+<link href="https://fonts.cdnfonts.com/css/nexa" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#fafaf8;--text:#111;--text2:#666;--text3:#bbb;--border:#e8e8e4;--card:#fff;--accent:#00E5CC}
+  body{font-family:'Nexa','Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;scroll-behavior:smooth}
+
+  /* PROGRESS */
+  #progress-bar{display:none}
+
+  /* DOTS */
+  #sec-indicator{position:fixed;right:2rem;top:50%;transform:translateY(-50%);z-index:90;display:flex;flex-direction:column;gap:10px}
+  .dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text3);background:transparent;cursor:pointer;transition:all .35s;display:block}
+  .dot.active{background:var(--accent);border-color:var(--accent);transform:scale(1.35)}
+
+  /* CURTAIN */
+  #curtain{position:fixed;inset:0;background:var(--accent);z-index:9999;transform:scaleY(0);transform-origin:bottom;pointer-events:none}
+  #curtain.in{animation:curtainIn .45s cubic-bezier(.76,0,.24,1) forwards}
+  #curtain.out{animation:curtainOut .45s cubic-bezier(.76,0,.24,1) forwards}
+  @keyframes curtainIn{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
+  @keyframes curtainOut{from{transform:scaleY(1);transform-origin:top}to{transform:scaleY(0);transform-origin:top}}
+
+  /* NAV */
+  nav{display:none}
+  .logo{font-family:'Nexa',sans-serif;font-size:0.95rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#fff}
+  .logo span{color:var(--accent)}
+  .nav-links{display:flex;gap:2rem;list-style:none}
+  .nav-links a{text-decoration:none;color:#555;font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;transition:color .2s;position:relative;padding-bottom:2px}
+  .nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1.5px;background:var(--accent);transition:width .25s}
+  .nav-links a:hover::after,.nav-links a.active::after{width:100%}
+  .nav-links a:hover,.nav-links a.active{color:#fff}
+
+  /* HERO */
+  #hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:4rem 3rem 4rem;border-bottom:1px solid #222;position:relative;overflow:hidden;background:#0a0a0a}
+  .hero-tag{display:none}
+  .hero-name{font-family:'Nexa',sans-serif;font-size:clamp(1.2rem,6vw,8rem);font-weight:700;letter-spacing:-.02em;line-height:1;color:#fff;position:relative;z-index:1;text-align:center;width:100%;white-space:nowrap;overflow:visible}
+  @media(max-width:600px){.hero-name{font-size:10vw !important;white-space:normal !important}}
+  .hero-name .accent-dot{color:var(--accent)}
+  .hero-name-row{display:block}
+  .hero-name-row.indent{padding-left:0}
+  .hero-sub-center{font-size:.85rem;color:#555;text-align:center;letter-spacing:.1em;margin-top:1rem;position:relative;z-index:1}
+  .hero-bottom{display:flex;justify-content:center;align-items:center;margin-top:3rem;position:relative;z-index:1}
+  .hero-center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;position:relative;z-index:1}
+  .hero-cta{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+  .btn{display:inline-block;padding:.72rem 1.9rem;border:1.5px solid #333;font-size:0.78rem;letter-spacing:0.1em;text-decoration:none;color:#888;text-transform:uppercase;transition:all .25s;cursor:pointer;background:transparent;font-family:'Nexa',sans-serif}
+  .btn:hover{background:var(--accent);border-color:var(--accent);color:#111}
+  .btn-fill{background:var(--accent);border-color:var(--accent);color:#111}
+  .btn-fill:hover{background:transparent;border-color:#fff;color:#fff}
+  .scroll-hint{font-size:0.72rem;color:#444;letter-spacing:0.08em;display:flex;align-items:center;gap:.6rem}
+  .scroll-line{width:36px;height:1px;background:#333}
+  .hero-bg-text{display:none}
+  .hero-accent-bar{display:none}
+  .hero-side{position:absolute;right:2.5rem;top:50%;transform:translateY(-50%) rotate(90deg);font-family:'Nexa',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:#2a2a2a;white-space:nowrap}
+
+  /* SECTIONS */
+  section{padding:6rem 3rem;border-bottom:1px solid var(--border)}
+  .sec-num{font-family:'Nexa',sans-serif;font-size:0.68rem;letter-spacing:0.14em;color:var(--text3);text-transform:uppercase;margin-bottom:.5rem}
+  .sec-title{font-family:'Nexa',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-0.03em}
+  .sec-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4rem}
+
+  /* ABOUT */
+  #about .content{display:grid;grid-template-columns:1fr 1.1fr;gap:5rem;margin-top:4rem;align-items:start}
+  .about-text p{font-size:1rem;color:var(--text2);line-height:1.9;margin-bottom:1.1rem}
+  .skills-grid{display:grid;grid-template-columns:1fr;gap:0}
+  @media(max-width:768px){
+    #hero{padding:5rem 1.5rem 3rem}
+    .hero-name{font-size:clamp(4rem,20vw,7rem)}
+    .hero-bottom{flex-direction:column;align-items:flex-start;gap:2rem}
+    section{padding:4rem 1.5rem}
+    #about .content{grid-template-columns:1fr;gap:2.5rem}
+    .skills-grid{grid-template-columns:1fr}
+    .skill-name{font-size:.78rem}
+    .skill-level{font-size:.62rem}
+    #projects .grid{grid-template-columns:1fr}
+    .promo-intent{grid-template-columns:1fr}
+    .promo-work-2col{grid-template-columns:1fr}
+    .logo-grid{grid-template-columns:1fr}
+    .promo-strength{grid-template-columns:1fr}
+    .timeline-item{grid-template-columns:1fr;gap:.5rem}
+    .timeline-item::before{display:none}
+    .hero-side{display:none}
+    .modal-inner{padding:5rem 1.5rem 4rem}
+    .promo-body{padding:3rem 1.5rem 4rem}
+  }
+  .skill-item{padding:.9rem 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .skill-name{font-size:0.85rem;font-family:'Nexa',sans-serif;font-weight:700}
+  .skill-tool{font-size:0.72rem;color:var(--text3);letter-spacing:0.06em;font-weight:300}
+
+  /* PROJECTS */
+  #projects .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin-top:4rem}
+  @media(max-width:600px){
+    #projects .grid{grid-template-columns:1fr !important}
+    .promo-intent{grid-template-columns:1fr !important}
+    .promo-work-2col{grid-template-columns:1fr !important}
+    .logo-grid{grid-template-columns:1fr !important}
+    .promo-strength{grid-template-columns:1fr !important}
+    #about .content{grid-template-columns:1fr !important}
+    .hero-bottom{flex-direction:column;align-items:flex-start;gap:2rem}
+    .promo-work-info{grid-template-columns:1fr !important}
+    section{padding:4rem 1.5rem}
+    .modal-inner{padding:5rem 1.5rem 4rem}
+    .promo-body{padding:3rem 1.5rem 4rem}
+    .timeline-item{grid-template-columns:1fr !important;gap:.5rem}
+    .timeline-item::before{display:none}
+    .hero-side{display:none}
+  }
+  .project-card{border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:transform .35s,box-shadow .35s;background:var(--card)}
+  .project-card:hover{transform:translateY(-6px);box-shadow:0 20px 48px rgba(0,0,0,.06)}
+  .project-card:hover .project-thumb-inner{transform:scale(1.05)}
+  .project-thumb{aspect-ratio:16/10;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .project-thumb-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Nexa',sans-serif;font-size:4rem;font-weight:800;color:rgba(255,255,255,0.15);transition:transform .5s ease;letter-spacing:-0.05em}
+  .p1{background:#151515}.p2{background:#1c2b4a}.p3{background:#2d1b4e}.p4{background:#0e3326}
+  .project-info{padding:1.4rem}
+  .project-tag{font-family:'Nexa',sans-serif;font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.4rem;font-weight:700}
+  .project-title{font-family:'Nexa',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:.35rem}
+  .project-desc{font-size:0.83rem;color:var(--text2);line-height:1.65}
+
+  /* CAREER */
+  #career .timeline{max-width:680px;margin-top:4rem}
+  .timeline-item{display:grid;grid-template-columns:120px 1fr;gap:2.5rem;padding:2.2rem 0;border-bottom:1px solid var(--border);position:relative}
+  .timeline-item::before{content:'';position:absolute;left:110px;top:0;bottom:0;width:1px;background:var(--border)}
+  .timeline-item:last-child{border-bottom:none}
+  .t-date{font-family:'Nexa',sans-serif;font-size:0.72rem;color:var(--text3);letter-spacing:.06em;padding-top:.2rem}
+  .t-role{font-family:'Nexa',sans-serif;font-size:1rem;font-weight:800;margin-bottom:.25rem}
+  .t-company{font-size:0.85rem;color:var(--accent);font-weight:700;margin-bottom:.7rem}
+  .t-desc{font-size:0.83rem;color:var(--text2);line-height:1.75}
+
+  /* CONTACT */
+  #contact{padding:6rem 3rem 8rem}
+  .contact-headline{font-family:'Nexa',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-0.03em;line-height:1.2;margin-bottom:2.5rem}
+  .contact-headline .hl{color:var(--accent)}
+  .contact-email{font-family:'Nexa',sans-serif;font-size:1.1rem;color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;gap:.6rem;border-bottom:1px solid var(--border);padding-bottom:.3rem;transition:color .2s,border-color .2s;margin-bottom:3rem}
+  .contact-email:hover{color:var(--text);border-color:var(--accent)}
+  .social-links{display:flex;gap:2rem;list-style:none}
+  .social-links a{text-decoration:none;font-family:'Nexa',sans-serif;font-size:0.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);transition:color .2s}
+  .social-links a:hover{color:var(--accent)}
+
+  footer{padding:1.4rem 3rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  footer p{font-family:'Nexa',sans-serif;font-size:0.72rem;color:var(--text3);letter-spacing:.06em}
+
+  .fade{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
+  .fade.on{opacity:1;transform:none}
+
+  .section-label{font-family:'Nexa',sans-serif;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin:3rem 0 1.2rem}
+
+  /* PROMO MODAL */
+  #promo-modal{position:fixed;inset:0;z-index:200;display:none;overflow-y:auto;background:#fafaf8}
+  #promo-modal.open{display:block}
+  .promo-hero{background:#111;padding:5rem 3rem;position:relative;overflow:hidden}
+  .promo-hero-tag{font-family:'Nexa',sans-serif;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:.8rem}
+  .promo-hero-title{font-family:'Nexa',sans-serif;font-size:clamp(2.8rem,6vw,5.5rem);font-weight:800;color:#fff;letter-spacing:-.04em;line-height:.95;margin-bottom:1.5rem}
+  .promo-hero-desc{font-size:.95rem;color:#888;line-height:1.85;max-width:500px}
+  .promo-hero-deco{position:absolute;right:3rem;top:50%;transform:translateY(-50%);width:200px;height:200px;border:1px solid #222;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:.4}
+  .promo-hero-deco span{font-family:'Nexa',sans-serif;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:#444}
+  .promo-body{max-width:960px;margin:0 auto;padding:5rem 3rem 6rem}
+  .promo-intent{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:5rem}
+  .promo-intent-item{background:var(--bg);padding:2rem;transition:background .2s}
+  .promo-intent-item:hover{background:#fff}
+  .promo-intent-num{font-family:'Nexa',sans-serif;font-size:.68rem;letter-spacing:.12em;color:var(--accent);font-weight:700;margin-bottom:.6rem}
+  .promo-intent-title{font-family:'Nexa',sans-serif;font-size:.92rem;font-weight:800;margin-bottom:.5rem}
+  .promo-intent-body{font-size:.8rem;color:var(--text2);line-height:1.8}
+  .deliverable-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--border);margin-bottom:2rem}
+  .deliverable-item{display:flex;align-items:center;gap:1.2rem;padding:1rem 1.4rem;border-bottom:1px solid var(--border);background:var(--card)}
+  .deliverable-item:last-child{border-bottom:none}
+  .deliverable-icon{font-size:1.1rem;width:28px;text-align:center}
+  .deliverable-name{font-family:'Nexa',sans-serif;font-size:.85rem;font-weight:800}
+  .deliverable-spec{font-size:.72rem;color:var(--text3);margin-top:.1rem}
+  .deliverable-item .meta-chip{margin-left:auto;color:var(--accent);border-color:var(--accent);font-size:.6rem}
+  .promo-works{display:flex;flex-direction:column;gap:2rem}
+  .promo-work{border:1px solid var(--border);background:var(--card);overflow:hidden}
+  .promo-work-thumb{display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .promo-work-thumb.wide{aspect-ratio:16/7}
+  .promo-work-thumb.sq{aspect-ratio:1/1;max-height:400px}
+  .thumb-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;width:100%;height:100%;min-height:180px}
+  .thumb-label{font-family:'Nexa',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+  .promo-work-info{padding:1.6rem 2rem;display:grid;grid-template-columns:1fr auto;align-items:start;gap:1rem}
+  .promo-work-tag{font-family:'Nexa',sans-serif;font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:.3rem}
+  .promo-work-title{font-family:'Nexa',sans-serif;font-size:1rem;font-weight:800;margin-bottom:.35rem}
+  .promo-work-desc{font-size:.8rem;color:var(--text2);line-height:1.7}
+  .promo-work-meta{display:flex;flex-direction:column;align-items:flex-end;gap:.3rem}
+  .meta-chip{font-family:'Nexa',sans-serif;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);border:1px solid var(--border);padding:.2rem .6rem;white-space:nowrap}
+  .promo-work-2col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+  .page-structure{display:flex;flex-direction:column;gap:.5rem}
+  .ps-row{padding:1rem 1.2rem;font-family:'Nexa',sans-serif;font-size:.82rem;font-weight:800;border-radius:4px}
+  .ps-row span{display:block;font-size:.72rem;font-weight:400;color:var(--text2);margin-top:.2rem}
+  .ps-top{background:linear-gradient(135deg,#b8eaf8,#fffde7)}
+  .ps-coupon{background:#fff3cd;border:1px solid #ffe082}
+  .ps-notice{background:#f5f5f5;border:1px solid var(--border)}
+  .promo-strength{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border)}
+  .promo-strength-item{background:var(--bg);padding:2rem}
+  .promo-strength-num{font-family:'Nexa',sans-serif;font-size:2rem;font-weight:800;color:var(--accent);line-height:1;margin-bottom:.8rem}
+  .promo-strength-title{font-family:'Nexa',sans-serif;font-size:.88rem;font-weight:800;margin-bottom:.4rem}
+  .promo-strength-body{font-size:.78rem;color:var(--text2);line-height:1.75}
+
+  /* LOGO MODAL */
+  #logo-modal{position:fixed;inset:0;z-index:200;display:none;overflow-y:auto;background:#fafaf8}
+  #logo-modal.open{display:block}
+  .modal-inner{max-width:900px;margin:0 auto;padding:7rem 3rem 6rem}
+  .modal-back{position:fixed;top:1.3rem;left:3rem;z-index:210;font-family:'Nexa',sans-serif;font-size:0.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:.5rem;background:rgba(250,250,248,0.92);backdrop-filter:blur(12px);padding:.5rem 1rem;border:1px solid var(--border);transition:color .2s}
+  .modal-back:hover{color:var(--text)}
+  .modal-back::before{content:'←'}
+  .modal-tag{font-family:'Nexa',sans-serif;font-size:0.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:.8rem;font-weight:700}
+  .modal-title{font-family:'Nexa',sans-serif;font-size:clamp(2.5rem,6vw,5rem);font-weight:800;letter-spacing:-.04em;line-height:1;margin-bottom:1.5rem}
+  .modal-desc{font-size:1rem;color:var(--text2);line-height:1.85;max-width:560px;margin-bottom:4rem}
+  .modal-divider{width:40px;height:2px;background:var(--accent);margin-bottom:4rem}
+  .logo-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+  .logo-item{border:1px solid var(--border);background:var(--card);overflow:hidden}
+  .logo-item.wide{grid-column:1/-1}
+  .logo-canvas{display:flex;align-items:center;justify-content:center;padding:3rem 2rem;min-height:220px;position:relative}
+  .logo-canvas.dark{background:#f4f4f2}
+  .logo-canvas.light{background:#f4f4f2}
+  .logo-canvas.accent{background:var(--accent)}
+  .logo-item-info{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+  .logo-item-name{font-family:'Nexa',sans-serif;font-size:.82rem;font-weight:800;margin-bottom:.2rem}
+  .logo-item-desc{font-size:.75rem;color:var(--text3);letter-spacing:.04em}
+  .logo-sample{display:flex;flex-direction:column;align-items:center;gap:.6rem}
+  .logo-symbol{width:52px;height:52px;border:3px solid #fff;border-radius:12px;display:flex;align-items:center;justify-content:center}
+  .logo-symbol.sq{border-radius:0}
+  .logo-symbol.circ{border-radius:50%}
+  .logo-symbol span{font-family:'Nexa',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;line-height:1}
+  .logo-wordmark{font-family:'Nexa',sans-serif;font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:.12em;text-transform:uppercase}
+  .logo-wordmark.dark-txt{color:#111}
+  .logo-type-row{display:flex;align-items:center;gap:2rem}
+  .logo-mark{width:44px;height:44px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .logo-mark span{font-family:'Nexa',sans-serif;font-size:1.3rem;font-weight:800;color:#111}
+  .logo-mark.inv{background:#111}
+  .logo-mark.inv span{color:#fff}
+  .logo-mark.ac{background:var(--accent)}
+  .logo-mark.ac span{color:#111}
+  .strength-block{display:flex;flex-direction:column;gap:0}
+  .strength-item{display:grid;grid-template-columns:56px 1fr;gap:1.5rem;padding:1.8rem 0;border-bottom:1px solid var(--border);align-items:start}
+  .strength-item:last-child{border-bottom:none}
+  .strength-num{font-family:'Nexa',sans-serif;font-size:1.6rem;font-weight:800;color:var(--accent);line-height:1}
+  .strength-title{font-family:'Nexa',sans-serif;font-size:.92rem;font-weight:800;margin-bottom:.4rem}
+  .strength-body{font-size:.82rem;color:var(--text2);line-height:1.75}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div id="curtain"></div>
+
+<div id="sec-indicator">
+  <a class="dot active" data-sec="hero" href="#hero"></a>
+  <a class="dot" data-sec="about" href="#about"></a>
+  <a class="dot" data-sec="projects" href="#projects"></a>
+  <a class="dot" data-sec="career" href="#career"></a>
+  <a class="dot" data-sec="contact" href="#contact"></a>
+</div>
+
+<nav>
+  <div class="logo">Lee <span>Sori</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#projects">Work</a></li>
+    <li><a href="#career">Career</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="particle-canvas" style="display:none"></canvas>
+  <div class="cube-wrap" id="cube-wrap">
+          <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <image href="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/1_01.png" x="0" y="0" width="380" height="280" preserveAspectRatio="xMidYMid meet"/>
+        <image href="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/1_02.png" x="1060" y="0" width="380" height="280" preserveAspectRatio="xMidYMid meet"/>
+        <image href="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/1_03.png" x="0" y="620" width="380" height="280" preserveAspectRatio="xMidYMid meet"/>
+        <image href="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/1_04.png" x="1060" y="620" width="380" height="280" preserveAspectRatio="xMidYMid meet"/>
+      </svg>
+  </div>
+  <div class="hero-side">Graphic Designer · Seoul · 2025</div>
+  <p class="hero-tag">Graphic Designer</p>
+  <div class="hero-center">
+    <h1 class="hero-name">PORTFOL<span class="accent-dot">!</span>O</h1>
+    <p class="hero-sub-center">Lee Sori | Graphic design</p>
+  </div>
+  <div class="hero-bottom">
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-fill">Work 보기</a>
+      <a href="#contact" class="btn">Contact</a>
+    </div>
+  </div>
+  <div class="hero-accent-bar"></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="sec-header fade">
+    <div>
+      <div class="sec-num">01 — About</div>
+      <h2 class="sec-title">Who I Am</h2>
+    </div>
+  </div>
+  <div class="content fade">
+    <div class="about-text">
+      <p>안녕하세요, 저는 그래픽 디자이너 이소리입니다. 브랜드 아이덴티티, 타이포그래피, 편집 디자인을 중심으로 시각적 커뮤니케이션을 만들어왔습니다.</p>
+      <p>강렬한 첫인상과 오래 남는 여운 — 두 가지를 모두 담은 비주얼을 추구합니다.</p>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-item"><span class="skill-name">Brand Identity</span><span class="skill-tool">Illustrator</span></div>
+      <div class="skill-item"><span class="skill-name">Detail Page Design</span><span class="skill-tool">Figma</span></div>
+      <div class="skill-item"><span class="skill-name">Promotion Design</span><span class="skill-tool">Photoshop · After Effects</span></div>
+      <div class="skill-item"><span class="skill-name">Print Design</span><span class="skill-tool">Illustrator</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="sec-header fade">
+    <div>
+      <div class="sec-num">02 — Work</div>
+      <h2 class="sec-title">프로젝트 갤러리</h2>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="project-card fade" onclick="openLogo()" style="cursor:pointer">
+      <div class="project-thumb" style="background:#111"><img src="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/%E1%84%8F%E1%85%A2%E1%84%89%E1%85%B5%E1%84%90%E1%85%A9%E1%86%A8_%E1%84%85%E1%85%A9%E1%84%80%E1%85%A9_cashtalk_logo_en.png" style="width:100%;height:100%;object-fit:contain;padding:1.5rem"/></div>
+      <div class="project-info">
+        <div class="project-tag">Logo Design</div>
+        <div class="project-title">로고 디자인</div>
+        <div class="project-desc">브랜드 철학을 담은 로고 디자인 — 심볼, 워드마크, 컬러 시스템 및 사용 가이드라인 제작</div>
+      </div>
+    </div>
+    <div class="project-card fade" onclick="openPromo()" style="cursor:pointer">
+      <div class="project-thumb"><div class="project-thumb-inner p2">02</div></div>
+      <div class="project-info">
+        <div class="project-tag">Promotion Design</div>
+        <div class="project-title">프로모션</div>
+        <div class="project-desc">시즌 이벤트 페이지, 팝업 — 짧은 시간 안에 시선을 잡고 행동을 유도하는 비주얼 설계</div>
+      </div>
+    </div>
+    <div class="project-card fade">
+      <div class="project-thumb"><div class="project-thumb-inner p3">03</div></div>
+      <div class="project-info">
+        <div class="project-tag">Detail Page</div>
+        <div class="project-title">상세페이지</div>
+        <div class="project-desc">이커머스 상세페이지 디자인 — 제품의 강점을 극대화하는 스토리텔링 레이아웃 설계</div>
+      </div>
+    </div>
+    <div class="project-card fade">
+      <div class="project-thumb"><div class="project-thumb-inner p4">04</div></div>
+      <div class="project-info">
+        <div class="project-tag">Print Design</div>
+        <div class="project-title">인쇄물</div>
+        <div class="project-desc">브로슈어, 포스터, 명함 등 — 종이 위에서 완성되는 브랜드 경험 설계</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAREER -->
+<section id="career">
+  <div class="sec-header fade">
+    <div>
+      <div class="sec-num">03 — Career</div>
+      <h2 class="sec-title">경력 & 이력</h2>
+    </div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-item fade">
+      <div class="t-date">2023.03 — Present</div>
+      <div>
+        <div class="t-role">Graphic Designer</div>
+        <div class="t-company">넛지헬스케어 주식회사</div>
+        <div class="t-desc">헬스케어 서비스 브랜드 디자인 및 시각 커뮤니케이션 전반을 담당하고 있습니다.</div>
+      </div>
+    </div>
+    <div class="timeline-item fade">
+      <div class="t-date">2019.11 — 2022.09</div>
+      <div>
+        <div class="t-role">Graphic Designer</div>
+        <div class="t-company">주식회사 에센루</div>
+        <div class="t-desc">브랜드 아이덴티티, 패키지 디자인, 편집 디자인 등 다양한 시각 디자인 프로젝트를 진행했습니다.</div>
+      </div>
+    </div>
+    <div class="timeline-item fade">
+      <div class="t-date">2016.08 — 2019.04</div>
+      <div>
+        <div class="t-role">Graphic Designer</div>
+        <div class="t-company">주식회사 페코스</div>
+        <div class="t-desc">그래픽 디자인 전반을 담당하며 브랜딩 및 인쇄물 제작 업무를 수행했습니다.</div>
+      </div>
+    </div>
+    <div class="timeline-item fade">
+      <div class="t-date">2012.03 — 2016.02</div>
+      <div>
+        <div class="t-role">시각디자인학과 졸업</div>
+        <div class="t-company">동아대학교</div>
+        <div class="t-desc">시각디자인 전공, 타이포그래피와 브랜드 디자인을 중심으로 전문성을 키웠습니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="fade">
+    <h2 class="contact-headline">함께 <span class="hl">멋진</span><br>것을 만들어요.</h2>
+    <a href="mailto:hello@leesori.com" class="contact-email">hello@leesori.com</a>
+    <ul class="social-links">
+      <li><a href="#">Instagram</a></li>
+      <li><a href="#">Behance</a></li>
+      <li><a href="#">LinkedIn</a></li>
+      <li><a href="#">Dribbble</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 Lee Sori. All rights reserved.</p>
+  <p>Seoul, Korea</p>
+</footer>
+
+<!-- PROMO MODAL -->
+<div id="promo-modal">
+  <div class="modal-back" onclick="closePromo()">목록으로</div>
+  <div class="promo-hero">
+    <div class="promo-hero-tag">Promotion Design · 캐시워크 대형 기획전</div>
+    <h2 class="promo-hero-title">웰니스위크</h2>
+    <p class="promo-hero-desc">건강 카테고리 대형 프로모션 — 롤링배너, 기획전 내부 페이지, 쿠폰 영역, 캐시톡 발송 이미지까지 캠페인 전 소재를 통합 설계한 프로젝트입니다.</p>
+    <div class="promo-hero-deco"><span>Banner · Event Page · Coupon · Popup</span></div>
+  </div>
+  <div class="promo-body">
+    <div class="section-label">01 — 기획 의도 & 고민</div>
+    <div class="promo-intent">
+      <div class="promo-intent-item">
+        <div class="promo-intent-num">01</div>
+        <div class="promo-intent-title">카테고리의 시각화</div>
+        <div class="promo-intent-body">건강이라는 추상적 키워드를 비타민통·스킨케어·워킹화·치약 아이콘으로 구체화. 텍스트 없이도 어떤 행사인지 직관적으로 전달되도록 설계했습니다.</div>
+      </div>
+      <div class="promo-intent-item">
+        <div class="promo-intent-num">02</div>
+        <div class="promo-intent-title">밝고 경쾌한 톤 설정</div>
+        <div class="promo-intent-body">웰니스 카테고리 특성에 맞게 하늘색 베이스의 밝고 긍정적인 분위기를 선택. 입체 타이포그래피로 행사명에 시각적 무게감을 부여했습니다.</div>
+      </div>
+      <div class="promo-intent-item">
+        <div class="promo-intent-num">03</div>
+        <div class="promo-intent-title">쿠폰 혜택의 위계 설계</div>
+        <div class="promo-intent-body">선착순 30% → 데일리 10% → 적립 3% 순으로 혜택의 크기에 따라 시각적 강약을 조절. 복잡한 유의사항은 소폰트로 정리해 가독성과 정보 완결성을 동시에 확보했습니다.</div>
+      </div>
+      <div class="promo-intent-item">
+        <div class="promo-intent-num">04</div>
+        <div class="promo-intent-title">캠페인 소재 일괄 설계</div>
+        <div class="promo-intent-body">롤링배너 메인 시안을 기준으로 6종 포맷을 분기 제작. 각 포맷의 용도에 맞게 정보량을 조절하면서도 하나의 캠페인으로 보이는 일관성을 유지했습니다.</div>
+      </div>
+    </div>
+    <div class="section-label">02 — 결과물 (총 6종)</div>
+    <div class="deliverable-list">
+      <div class="deliverable-item"><div class="deliverable-icon">🎯</div><div><div class="deliverable-name">롤링배너</div><div class="deliverable-spec">1000 × 500 · JPEG/PSD · 메인 진입 배너</div></div><div class="meta-chip">완료</div></div>
+      <div class="deliverable-item"><div class="deliverable-icon">🖼</div><div><div class="deliverable-name">바탕채움 배너</div><div class="deliverable-spec">600 × 500 · JPEG/PSD · 롤링배너 활용 리사이즈</div></div><div class="meta-chip">완료</div></div>
+      <div class="deliverable-item"><div class="deliverable-icon">📋</div><div><div class="deliverable-name">팀워크 에셋 배너</div><div class="deliverable-spec">720 × 540 · JPG · 내부 신청용</div></div><div class="meta-chip">완료</div></div>
+      <div class="deliverable-item"><div class="deliverable-icon">🔷</div><div><div class="deliverable-name">아이콘</div><div class="deliverable-spec">100 × 100 · PNG · 웰니스위크 텍스트 활용</div></div><div class="meta-chip">완료</div></div>
+      <div class="deliverable-item"><div class="deliverable-icon">💬</div><div><div class="deliverable-name">캐시톡 발송 이미지</div><div class="deliverable-spec">800 × 400 · WebP · 메신저 푸시 발송용</div></div><div class="meta-chip">완료</div></div>
+      <div class="deliverable-item"><div class="deliverable-icon">📄</div><div><div class="deliverable-name">기획전 내부 이미지</div><div class="deliverable-spec">앱 내 상세 페이지 · 쿠폰 영역 포함</div></div><div class="meta-chip">완료</div></div>
+    </div>
+    <div class="promo-works" style="margin-top:2rem">
+      <div class="promo-work">
+        <div class="promo-work-thumb wide" style="background:#111">
+          <img src="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/%E1%84%8B%E1%85%A1%E1%84%90%E1%85%B3%E1%84%87%E1%85%A9%E1%84%83%E1%85%B3%201.png" style="width:100%;height:100%;object-fit:contain"/>
+        </div>
+        <div class="promo-work-info">
+          <div>
+            <div class="promo-work-tag">Promotion Page</div>
+            <div class="promo-work-title">웰니스위크 프로모션 페이지</div>
+            <div class="promo-work-desc">밝은 하늘색 베이스에 입체 타이포그래피로 '웰니스위크' 타이틀 강조. 선착순 30% / 데일리 10% / 적립 3% 쿠폰 티켓을 레이어드해 혜택을 한눈에 전달.</div>
+          </div>
+        </div>
+      </div>
+      <div class="promo-work-2col">
+        <div class="promo-work">
+          <div class="promo-work-thumb sq" style="background:linear-gradient(135deg,#b8eaf8,#fffde7)">
+            <div class="thumb-placeholder"><div style="font-size:1.8rem">💬</div><div class="thumb-label">캐시톡 발송 이미지</div><div style="font-size:.68rem;color:#aaa">800 × 400 · WebP</div></div>
+          </div>
+          <div class="promo-work-info">
+            <div>
+              <div class="promo-work-tag">캐시톡 Push Image</div>
+              <div class="promo-work-title">캐시톡 발송 이미지</div>
+              <div class="promo-work-desc">메신저 푸시 발송용 — 행사명·기간을 압축해 클릭 유도에 집중한 800×400 WebP 포맷</div>
+            </div>
+            <div class="promo-work-meta"><span class="meta-chip">800×400</span><span class="meta-chip">WebP</span></div>
+          </div>
+        </div>
+        <div class="promo-work">
+          <div class="promo-work-thumb sq" style="background:linear-gradient(135deg,#fffde7,#fce4ec)">
+            <div class="thumb-placeholder"><div style="font-size:1.8rem">🔷</div><div class="thumb-label">아이콘</div><div style="font-size:.68rem;color:#aaa">100 × 100 · PNG</div></div>
+          </div>
+          <div class="promo-work-info">
+            <div>
+              <div class="promo-work-tag">Icon</div>
+              <div class="promo-work-title">웰니스위크 아이콘</div>
+              <div class="promo-work-desc">앱 내 기획전 목록 노출용 — 웰니스위크 텍스트 활용 정방형 아이콘</div>
+            </div>
+            <div class="promo-work-meta"><span class="meta-chip">100×100</span><span class="meta-chip">PNG</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="promo-work">
+        <div style="padding:2.5rem;background:#f7f7f5;border-bottom:1px solid var(--border)">
+          <div style="font-family:'Nexa',sans-serif;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:1.2rem">기획전 내부 페이지 구조</div>
+          <div class="page-structure">
+            <div class="ps-row ps-top">🌿 웰니스위크 메인 비주얼<br><span>오늘부터 건강 루틴 시작! · 1.27~2.8</span></div>
+            <div class="ps-row ps-coupon">🎟 상품 쿠폰 영역<br><span>선착순 30% OFF · 데일리 10% OFF</span></div>
+            <div class="ps-row ps-notice">📋 쿠폰 공통 유의사항<br><span>소폰트 정리 · 5개 항목</span></div>
+          </div>
+        </div>
+        <div class="promo-work-info">
+          <div>
+            <div class="promo-work-tag">Event Page — In-app</div>
+            <div class="promo-work-title">기획전 내부 이미지</div>
+            <div class="promo-work-desc">롤링배너와 연결성을 유지하며 메인 비주얼 → 쿠폰 → 유의사항 순으로 정보를 계층화한 구성.</div>
+          </div>
+          <div class="promo-work-meta"><span class="meta-chip">Mobile</span><span class="meta-chip">App in-page</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGO MODAL -->
+<div id="logo-modal">
+  <div class="modal-back" onclick="closeLogo()">목록으로</div>
+  <div class="modal-inner">
+    <div id="img-drop" style="border:1.5px dashed var(--border);padding:1.5rem 2rem;margin-bottom:2.5rem;display:flex;align-items:center;gap:1.5rem;cursor:pointer;transition:border-color .2s" onclick="this.querySelector('input').click()">
+      <input type="file" accept="image/*" multiple style="display:none">
+      <div style="font-size:1.4rem">📁</div>
+      <div><p style="font-family:'Nexa',sans-serif;font-size:.8rem;font-weight:800;margin-bottom:.2rem">이미지 업로드</p><p style="font-size:.75rem;color:var(--text3)">캐시톡 로고 이미지 5장을 순서대로 선택해주세요</p></div>
+    </div>
+    <div class="modal-tag">Logo Design · 캐시워크 메신저 서비스</div>
+    <h2 class="modal-title">캐시톡</h2>
+    <p class="modal-desc">걸으면 리워드가 쌓이는 앱 '캐시워크' 내 메신저 서비스의 브랜드 로고. 기존 워크톡에서 캐시톡으로 서비스명을 개편하며 로고를 전면 리디자인했습니다.</p>
+    <div class="modal-divider"></div>
+    <div class="section-label">01 — 기획 의도</div>
+    <div class="strength-block">
+      <div class="strength-item">
+        <div class="strength-num">💬</div>
+        <div><div class="strength-title">메신저 + 리워드의 결합</div><div class="strength-body">단순 메신저가 아닌, 코인을 주고받는 리워드 메신저임을 심볼 하나로 전달해야 했습니다.</div></div>
+      </div>
+      <div class="strength-item">
+        <div class="strength-num">🪙</div>
+        <div><div class="strength-title">지갑 속 코인 이미지</div><div class="strength-body">말풍선 상단에 코인이 들어가는 형태로, 지갑에 코인이 적립되는 개념을 직관적으로 표현했습니다.</div></div>
+      </div>
+      <div class="strength-item">
+        <div class="strength-num">✉️</div>
+        <div><div class="strength-title">친구에게 코인 전송</div><div class="strength-body">메신저로 코인을 보낸다는 핵심 기능을 심볼 구조로 시각화 — 기능을 설명하지 않아도 느낄 수 있도록.</div></div>
+      </div>
+    </div>
+    <div class="section-label">02 — 결과물</div>
+    <div class="logo-grid">
+      <div class="logo-item"><div class="logo-canvas dark" style="padding:2rem;min-height:200px"><img src="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/%E1%84%8F%E1%85%A2%E1%84%89%E1%85%B5%E1%84%90%E1%85%A9%E1%86%A8_%E1%84%85%E1%85%A9%E1%84%80%E1%85%A9_cashtalk_logo_en.png" style="max-height:140px;max-width:100%;object-fit:contain"/></div><div class="logo-item-info"><div class="logo-item-name">영문 심볼형 — 다크</div><div class="logo-item-desc">말풍선 + 코인 심볼, 세로 워드마크 조합</div></div></div>
+      <div class="logo-item"><div class="logo-canvas dark" style="padding:2rem;min-height:200px"><img src="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/%E1%84%8F%E1%85%A2%E1%84%89%E1%85%B5%E1%84%90%E1%85%A9%E1%86%A8_%E1%84%85%E1%85%A9%E1%84%80%E1%85%A9_cashtalk_logo_en2.png" style="max-height:100px;max-width:100%;object-fit:contain"/></div><div class="logo-item-info"><div class="logo-item-name">영문 가로형 — 다크</div><div class="logo-item-desc">심볼 + 가로 워드마크 조합</div></div></div>
+      <div class="logo-item"><div class="logo-canvas dark" style="padding:2rem;min-height:200px"><img src="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/%E1%84%8F%E1%85%A2%E1%84%89%E1%85%B5%E1%84%90%E1%85%A9%E1%86%A8_%E1%84%85%E1%85%A9%E1%84%80%E1%85%A9_cashtalk_logo_kr.png" style="max-height:140px;max-width:100%;object-fit:contain"/></div><div class="logo-item-info"><div class="logo-item-name">한글 심볼형 — 다크</div><div class="logo-item-desc">캐시·톡 분리 타이포 + 코인 심볼 조합</div></div></div>
+      <div class="logo-item"><div class="logo-canvas dark" style="padding:2rem;min-height:200px"><img src="https://raw.githubusercontent.com/dlthfl1215/portfolio/main/%E1%84%8F%E1%85%A2%E1%84%89%E1%85%B5%E1%84%90%E1%85%A9%E1%86%A8_%E1%84%85%E1%85%A9%E1%84%80%E1%85%A9_cashtalk_logo_kr2.png" style="max-height:100px;max-width:100%;object-fit:contain"/></div><div class="logo-item-info"><div class="logo-item-name">한글 가로형 — 다크</div><div class="logo-item-desc">한글 워드마크 + 가로 배치 실사용형</div></div></div>
+    </div>
+    <div class="section-label">03 — Before / After</div>
+    <div class="logo-grid">
+      <div class="logo-item"><div class="logo-canvas dark" style="padding:2.5rem;min-height:200px;position:relative"><img id="img-5" style="max-height:130px;max-width:100%;object-fit:contain;opacity:.75"/><div style="position:absolute;top:1rem;left:1rem;font-family:'Nexa',sans-serif;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#666;background:#111;padding:.25rem .6rem;border:1px solid #333">Before</div></div><div class="logo-item-info"><div class="logo-item-name">워크톡 (기존)</div><div class="logo-item-desc">핸드라이팅 스타일 — 리워드 연상 어려움, 메신저 정체성 불명확</div></div></div>
+      <div class="logo-item"><div class="logo-canvas dark" style="padding:2.5rem;min-height:200px;position:relative"><img id="img-1b" style="max-height:130px;max-width:100%;object-fit:contain"/><div style="position:absolute;top:1rem;left:1rem;font-family:'Nexa',sans-serif;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:#111;padding:.25rem .6rem;border:1px solid var(--accent)">After</div></div><div class="logo-item-info"><div class="logo-item-name">캐시톡 (리디자인)</div><div class="logo-item-desc">코인 + 말풍선 심볼로 기능과 브랜드 직관적 전달</div></div></div>
+    </div>
+    <div class="section-label">04 — 브랜드 컬러</div>
+    <div class="logo-grid">
+      <div class="logo-item wide">
+        <div class="logo-canvas light" style="justify-content:flex-start;padding:2.5rem">
+          <div>
+            <div style="display:flex;gap:1rem;margin-bottom:1rem">
+              <div style="width:64px;height:64px;border-radius:8px;background:#F5A800"></div>
+              <div style="width:64px;height:64px;border-radius:8px;background:#3D2B1F"></div>
+              <div style="width:64px;height:64px;border-radius:8px;background:#fff;border:1px solid #e8e8e4"></div>
+              <div style="width:64px;height:64px;border-radius:8px;background:#111"></div>
+            </div>
+            <div style="display:flex;gap:1rem">
+              <div style="width:64px;font-family:'Nexa',sans-serif;font-size:.62rem;color:#666">#F5A800<br>캐시 골드</div>
+              <div style="width:64px;font-family:'Nexa',sans-serif;font-size:.62rem;color:#666">#3D2B1F<br>딥 브라운</div>
+              <div style="width:64px;font-family:'Nexa',sans-serif;font-size:.62rem;color:#666">#FFFFFF<br>화이트</div>
+              <div style="width:64px;font-family:'Nexa',sans-serif;font-size:.62rem;color:#666">#111111<br>블랙</div>
+            </div>
+          </div>
+        </div>
+        <div class="logo-item-info"><div class="logo-item-name">캐시톡 브랜드 컬러</div><div class="logo-item-desc">코인의 골드, 신뢰감의 브라운으로 리워드 메신저 정체성 표현</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const sections = ['hero','about','projects','career','contact'];
+const dots = document.querySelectorAll('.dot');
+const navLinks = document.querySelectorAll('.nav-links a');
+const progressBar = document.getElementById('progress-bar');
+const curtain = document.getElementById('curtain');
+
+function updateProgress(){
+  const h = document.documentElement;
+  const pct = (h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  progressBar.style.width = pct+'%';
+}
+function updateActive(){
+  let cur = 'hero';
+  sections.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(el.getBoundingClientRect().top <= 100) cur = id;
+  });
+  dots.forEach(d=>d.classList.toggle('active', d.dataset.sec===cur));
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href')==='#'+cur));
+}
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add('on')});
+},{threshold:.1});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+document.addEventListener('scroll',()=>{updateProgress();updateActive()},{passive:true});
+updateActive();
+
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click', e=>{
+    const target = document.querySelector(a.getAttribute('href'));
+    if(!target) return;
+    e.preventDefault();
+    curtain.className='in';
+    setTimeout(()=>{target.scrollIntoView();curtain.className='out';setTimeout(()=>curtain.className='',500);},440);
+  });
+});
+
+function openModal(id){
+  const m = document.getElementById(id);
+  curtain.className='in';
+  setTimeout(()=>{m.classList.add('open');m.scrollTop=0;document.body.style.overflow='hidden';curtain.className='out';setTimeout(()=>curtain.className='',500);},440);
+}
+function closeModal(id){
+  const m = document.getElementById(id);
+  curtain.className='in';
+  setTimeout(()=>{m.classList.remove('open');document.body.style.overflow='';curtain.className='out';setTimeout(()=>curtain.className='',500);},440);
+}
+function openLogo(){ loadLogos(); openModal('logo-modal'); }
+function closeLogo(){ closeModal('logo-modal'); }
+function openPromo(){ openModal('promo-modal'); }
+function closePromo(){ closeModal('promo-modal'); }
+
+const logoImgs = {};
+function loadLogos(){
+  const ids=['img-1','img-2','img-3','img-4','img-5','img-1b'];
+  const keys=['1','2','3','4','5','1'];
+  ids.forEach((id,i)=>{const el=document.getElementById(id);if(el&&logoImgs[keys[i]])el.src=logoImgs[keys[i]];});
+}
+const drop = document.getElementById('img-drop');
+if(drop){
+  drop.addEventListener('dragover',e=>{e.preventDefault();drop.style.borderColor='var(--accent)'});
+  drop.addEventListener('dragleave',()=>{drop.style.borderColor='var(--border)'});
+  drop.addEventListener('drop',e=>{
+    e.preventDefault();drop.style.borderColor='var(--border)';
+    [...e.dataTransfer.files].filter(f=>f.type.startsWith('image/')).forEach((f,i)=>{if(i<5){const r=new FileReader();r.onload=ev=>{logoImgs[String(i+1)]=ev.target.result;};r.readAsDataURL(f);}});
+    drop.querySelector('p').textContent='이미지 로드됨 ✓';drop.style.borderColor='var(--accent)';
+  });
+  drop.querySelector('input').addEventListener('change',function(){
+    [...this.files].forEach((f,i)=>{if(i<5){const r=new FileReader();r.onload=ev=>{logoImgs[String(i+1)]=ev.target.result;};r.readAsDataURL(f);}});
+    drop.querySelector('p').textContent='이미지 로드됨 ✓';drop.style.borderColor='var(--accent)';
+  });
+}
+</script>
+</body>
+</html>
